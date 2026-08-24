@@ -2,8 +2,9 @@ import Fastify from 'fastify'
 import 'dotenv/config'
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import productRoutes from './routes/products.routes';
 
-const PORT = parseInt(process.env.PORT ?? '3005');
+const PORT = parseInt(process.env.PORT ?? '3000');
 
 const fastify = Fastify({
   logger: true
@@ -18,7 +19,8 @@ fastify.register(helmet, {
     contentSecurityPolicy: false
 });
 
-// Declare a route
+fastify.register(productRoutes, { prefix: '/products' });
+
 fastify.get('/', async (request, reply) => {
     return {
         message: 'E-commerce Syntax Wear API',
@@ -34,13 +36,11 @@ fastify.get('/health', async (request, reply) => {
     }
 });
 
-// Run the server!
 fastify.listen({ port: PORT }, function (err, address) {
   if (err) {
     fastify.log.error(err)
     process.exit(1)
   }
-  // Server is now listening on ${address}
 })
 
 export default fastify;
