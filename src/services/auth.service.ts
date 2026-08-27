@@ -1,28 +1,48 @@
-import { RegisterRequest } from "../types";
+import { RegisterRequest, AuthRequest } from "../types";
 import { prisma } from "../utils/prisma";
+import bcrypt from "bcrypt";
 
 export const registerUser = async (payload: RegisterRequest) => {
+  const existingUser = await prisma.user.findUnique({
+    where: { email: payload.email },
+  });
 
-	const existingUser = await prisma.user.findUnique({
-		where: { email: payload.email },
-	});
+  if (existingUser) {
+    throw new Error("Email já cadastrado.");
+  }
 
-	if (existingUser) {
-		throw new Error("Email já cadastrado.");
-	}
+  const hashedPassword = await bcrypt.hash(payload.password, 10);
 
-	const newUser = await prisma.user.create({
-		data: {
-			firstName: payload.firstName,
-			lastName: payload.lastName,
-			email: payload.email,
-			passwordHash: payload.password,
-			cpf: payload.cpf,
-			birthDate: payload.dateOfBirth || undefined,
-			phone: payload.phone,
-			role: "USER",
-		},
-	});
+  const newUser = await prisma.user.create({
+    data: {
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      email: payload.email,
+      passwordHash: hashedPassword,
+      cpf: payload.cpf,
+      birthDate: payload.dateOfBirth || undefined,
+      phone: payload.phone,
+      role: "USER",
+    },
+  });
 
-    return newUser;
+  return newUser;
+};
+
+export const loginUser = async (data: AuthRequest) => {
+  const user = await prisma.user.findUnique({
+    where: { email: data.email },
+  });
+
+  if (!user) {
+    throw new Error("Usuário não encontrado.");
+  }
+
+  const isValidPassword = await bcrypt.compare(data.password, user.passwordHash);
+
+  if (!isValidPassword) {
+    throw new Error("Senha inválida.");
+  }
+
+  return user;
 };
