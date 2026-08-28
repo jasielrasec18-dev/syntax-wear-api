@@ -32,3 +32,12 @@ export interface CreateProduct {
     active: boolean;
     images?: string[];
 }
+
+export interface UpdateProduct extends Partial<CreateProduct> {
+    name: string;
+    description: string;
+    price: number;
+    slug: string;
+    stock: number;
+    active: boolean;
+}
