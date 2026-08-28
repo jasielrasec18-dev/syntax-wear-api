@@ -9,15 +9,26 @@ export interface ProductFilters{
 }
 
 export interface AuthRequest {
-  email: string;
-  password: string;
+    email: string;
+    password: string;
 }
 
 export interface RegisterRequest extends AuthRequest {
-  firstName: string;
-  lastName: string;
-  cpf?: string;
-  dateOfBirth?: string;
-  phone?: string;
-  role?: 'USER' | 'ADMIN';
+    firstName: string;
+    lastName: string;
+    cpf?: string;
+    dateOfBirth?: string;
+    phone?: string;
+}
+
+export interface CreateProduct {
+    name: string;
+    description: string;
+    price: number;
+    colors?: string[];
+    sizes?: string[];
+    slug: string;
+    stock: number;
+    active: boolean;
+    images?: string[];
 }

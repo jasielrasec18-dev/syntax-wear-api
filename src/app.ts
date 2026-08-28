@@ -7,6 +7,8 @@ import swagger from "@fastify/swagger";
 import scalar from "@scalar/fastify-api-reference";
 import jwt from "@fastify/jwt";
 import authRoutes from "./routes/auth.routes";
+import { errorHandler } from "./middlewares/error.middleware";
+
 
 const PORT = parseInt(process.env.PORT ?? "3000");
 
@@ -80,12 +82,7 @@ fastify.get("/health", async (request, reply) => {
   };
 });
 
-fastify.post("/login", async (request, reply) => {
-  const { email, password } = request.body as {
-    email: string;
-    password: string;
-  };
-});
+fastify.setErrorHandler(errorHandler);
 
 fastify.listen({ port: PORT }, function (err, address) {
   if (err) {
