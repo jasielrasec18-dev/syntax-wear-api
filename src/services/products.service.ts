@@ -6,7 +6,6 @@ export const getProducts = async (filter: ProductFilters) => {
 
 	const where: any = {};
 
-	// Filtro por preço
 	if (minPrice !== undefined || maxPrice !== undefined) {
 		where.price = {};
 		if (minPrice !== undefined) {
@@ -17,7 +16,6 @@ export const getProducts = async (filter: ProductFilters) => {
 		}
 	}
 
-	// Filtro por busca (name e description)
 	if (search && search.trim()) {
 		where.OR = [
 			{
@@ -35,18 +33,15 @@ export const getProducts = async (filter: ProductFilters) => {
 		];
 	}
 
-	// Paginação
 	const skip = (Number(page) - 1) * Number(limit);
 	const take = Number(limit);
 
-	// Ordenação
 	const orderBy: any = {};
 	if (sortBy) {
 		orderBy[sortBy] = sortOrder || "asc";
 	}
 
 	try {
-		// Buscar produtos com filtros
 		const [products, total] = await Promise.all([
 			prisma.product.findMany({
 				where,

@@ -3,31 +3,30 @@ import { loginUser, registerUser } from "../services/auth.service";
 import { AuthRequest, RegisterRequest } from "../types";
 import { loginSchema, registerSchema } from "../utils/validators";
 
-export const register = async (request: FastifyRequest, reply: FastifyReply) => {  
+export const register = async (request: FastifyRequest, reply: FastifyReply) => {
 
-    const validation = registerSchema.parse(request.body as RegisterRequest)
+    const validation = registerSchema.parse(request.body as RegisterRequest);
 
-    const user = await registerUser(validation);
+	const user = await registerUser(validation);
 
-    const token = request.server.jwt.sign({userId: user.id});
+	const token = request.server.jwt.sign({ userId: user.id });
 
-    reply.status(201).send({
-        user, 
-        token
-    });
+	reply.status(201).send({
+		user,
+		token,
+	});
 };
 
-export const login = async (request: FastifyRequest<{Body:AuthRequest}>, reply: FastifyReply) => {
+export const login = async (request: FastifyRequest<{ Body: AuthRequest }>, reply: FastifyReply) => {
 
+	const validation = loginSchema.parse(request.body as AuthRequest);
 
-  const validation = loginSchema.parse(request.body as AuthRequest);
-  
-  const user = await loginUser(validation);
+	const user = await loginUser(validation);
 
-  const token = request.server.jwt.sign({userId: user.id});
+	const token = request.server.jwt.sign({ userId: user.id });
 
-  reply.status(200).send({
-    user,
-    token
-  });
+	reply.status(200).send({
+		user,
+		token,
+	});
 };

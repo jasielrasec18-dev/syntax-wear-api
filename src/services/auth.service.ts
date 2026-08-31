@@ -1,48 +1,49 @@
-import { RegisterRequest, AuthRequest } from "../types";
+import { AuthRequest, RegisterRequest } from "../types";
 import { prisma } from "../utils/prisma";
 import bcrypt from "bcrypt";
 
 export const registerUser = async (payload: RegisterRequest) => {
-  const existingUser = await prisma.user.findUnique({
-    where: { email: payload.email },
-  });
 
-  if (existingUser) {
-    throw new Error("Email já cadastrado.");
-  }
+	const existingUser = await prisma.user.findUnique({
+		where: { email: payload.email },
+	});
 
-  const hashedPassword = await bcrypt.hash(payload.password, 10);
+	if (existingUser) {
+		throw new Error("Email já cadastrado.");
+	}
 
-  const newUser = await prisma.user.create({
-    data: {
-      firstName: payload.firstName,
-      lastName: payload.lastName,
-      email: payload.email,
-      passwordHash: hashedPassword,
-      cpf: payload.cpf,
-      birthDate: payload.dateOfBirth || undefined,
-      phone: payload.phone,
-      role: "USER",
-    },
-  });
+    const hashedPassword = await bcrypt.hash(payload.password, 10);
 
-  return newUser;
+	const newUser = await prisma.user.create({
+		data: {
+			firstName: payload.firstName,
+			lastName: payload.lastName,
+			email: payload.email,
+			password: hashedPassword,
+			cpf: payload.cpf,
+			birthDate: payload.dateOfBirth || undefined,
+			phone: payload.phone,
+            role: "USER",
+		},
+	});
+
+    return newUser;
 };
 
 export const loginUser = async (data: AuthRequest) => {
-  const user = await prisma.user.findUnique({
-    where: { email: data.email },
-  });
+    const user = await prisma.user.findUnique({
+        where: { email: data.email },
+    });
 
-  if (!user) {
-    throw new Error("Usuário não encontrado.");
-  }
+    if(!user) {
+        throw new Error("Usuário não encontrado.");
+    }
 
-  const isValidPassword = await bcrypt.compare(data.password, user.passwordHash);
+    const isValidPassword = await bcrypt.compare(data.password, user.password);
 
-  if (!isValidPassword) {
-    throw new Error("Senha inválida.");
-  }
+    if(!isValidPassword) {
+        throw new Error("Senha inválida.");
+    }
 
-  return user;
+    return user;
 };

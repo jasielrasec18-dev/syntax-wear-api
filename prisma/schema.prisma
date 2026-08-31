@@ -8,21 +8,32 @@ datasource db {
 }
 
 model User {
-  id           Int       @id @default(autoincrement())
-  firstName    String
-  lastName     String
-  email        String    @unique
-  passwordHash String
-  cpf          String?   @unique
-  phone        String?
-  birthDate    DateTime?
-  createdAt    DateTime  @default(now())
-  role         Role      @default(USER)
+  id         Int       @id @default(autoincrement())
+  firstName  String
+  lastName   String
+  email      String    @unique
+  password   String
+  cpf        String?   @unique
+  phone      String?
+  birthDate  DateTime?
+  createdAt  DateTime  @default(now())
+  role       Role      @default(USER)
 }
 
 enum Role {
   USER
   ADMIN
+} 
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String
+  slug        String    @unique
+  description String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
 }
 
 model Product {
@@ -37,5 +48,8 @@ model Product {
   stock       Int      @default(0)
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
-  updateAt    DateTime @updatedAt
+  updatedAt   DateTime @updatedAt
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  Int
 }
+
