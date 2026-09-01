@@ -5,13 +5,23 @@ import { getOrders, getOrderById, createOrder, updateOrder, cancelOrder } from '
 
 export async function listOrders(request: FastifyRequest, reply: FastifyReply) {
   const filters = orderFiltersSchema.parse(request.query as OrderFilters)
-  const orders = await getOrders(filters)
+  
+  const user = request.user as any
+  const requestingUserId = user.userId
+  const isAdmin = user.role === 'ADMIN'
+  
+  const orders = await getOrders(filters, requestingUserId, isAdmin)
   reply.status(200).send(orders)
 }
 
 export async function getOrder(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
   const id = parseInt(request.params.id, 10)
-  const order = await getOrderById(id)
+  
+  const user = request.user as any
+  const requestingUserId = user.userId
+  const isAdmin = user.role === 'ADMIN'
+  
+  const order = await getOrderById(id, requestingUserId, isAdmin)
   reply.status(200).send(order)
 }
 
@@ -30,7 +40,12 @@ export async function updateExistingOrder(
 ) {
   const id = parseInt(request.params.id, 10)
   const data = updateOrderSchema.parse(request.body as UpdateOrder)
-  const order = await updateOrder(id, data)
+  
+  const user = request.user as any
+  const requestingUserId = user.userId
+  const isAdmin = user.role === 'ADMIN'
+  
+  const order = await updateOrder(id, data, requestingUserId, isAdmin)
   reply.status(200).send(order)
 }
 
@@ -39,7 +54,12 @@ export async function deleteExistingOrder(
   reply: FastifyReply
 ) {
   const id = parseInt(request.params.id, 10)
-  await cancelOrder(id)
+  
+  const user = request.user as any
+  const requestingUserId = user.userId
+  const isAdmin = user.role === 'ADMIN'
+  
+  await cancelOrder(id, requestingUserId, isAdmin)
   reply.status(200).send({
     message: 'Pedido cancelado com sucesso',
   })
