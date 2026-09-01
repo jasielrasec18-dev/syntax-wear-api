@@ -40,3 +40,4 @@ coverage/
 
 # Prisma
 prisma/migrations/
+docs/
