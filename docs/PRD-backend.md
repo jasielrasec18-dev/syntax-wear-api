@@ -1,6 +1,6 @@
 # PRD — API Backend para Syntax Wear
 
-Última atualização: 25 de novembro de 2025
+Última atualização: 01 de setembro de 2026
 
 ## Objetivo
 
