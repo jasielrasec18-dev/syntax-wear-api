@@ -4,6 +4,7 @@ import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import productRoutes from "./routes/products.routes";
 import categoryRoutes from "./routes/categories.routes";
+import orderRoutes from "./routes/orders.routes";
 import swagger from "@fastify/swagger";
 import scalar from "@scalar/fastify-api-reference";
 import jwt from "@fastify/jwt";
@@ -11,7 +12,7 @@ import authRoutes from "./routes/auth.routes";
 import z, { ZodError } from "zod";
 import { errorHandler } from "./middlewares/error.middleware";
 
-const PORT = parseInt(process.env.PORT ?? "3005");
+const PORT = parseInt(process.env.PORT ?? "3000");
 
 const fastify = Fastify({
 	logger: true,
@@ -66,6 +67,7 @@ fastify.register(scalar, {
 
 fastify.register(productRoutes, { prefix: "/products" });
 fastify.register(categoryRoutes, { prefix: "/categories" });
+fastify.register(orderRoutes, { prefix: "/orders" });
 fastify.register(authRoutes, { prefix: "/auth" });
 
 fastify.get("/", async (request, reply) => {
