@@ -25,6 +25,17 @@ export const registerUser = async (payload: RegisterRequest) => {
 			phone: payload.phone,
             role: "USER",
 		},
+		select: {
+			id: true,
+			firstName: true,
+			lastName: true,
+			email: true,
+			cpf: true,
+			birthDate: true,
+			phone: true,
+			role: true,
+			createdAt: true,
+		},
 	});
 
     return newUser;
@@ -45,5 +56,7 @@ export const loginUser = async (data: AuthRequest) => {
         throw new Error("Senha inválida.");
     }
 
-    return user;
+    const { password, ...userWithoutPassword } = user;
+
+    return userWithoutPassword;
 };

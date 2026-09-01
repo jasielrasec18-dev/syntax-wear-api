@@ -1,19 +1,22 @@
 import { OrderFilters, CreateOrder, UpdateOrder } from '../types'
 import { prisma } from '../utils/prisma'
 
-export async function getOrders(filters: OrderFilters = {}) {
+export async function getOrders(filters: OrderFilters = {}, requestingUserId: number, isAdmin: boolean) {
   const page = filters.page || 1
   const limit = filters.limit || 10
   const skip = (page - 1) * limit
 
   const where: any = {}
 
-  if (filters.status) {
-    where.status = filters.status
+  
+  if (!isAdmin) {
+    where.userId = requestingUserId
+  } else if (filters.userId) {
+    where.userId = filters.userId
   }
 
-  if (filters.userId) {
-    where.userId = filters.userId
+  if (filters.status) {
+    where.status = filters.status
   }
 
   if (filters.startDate || filters.endDate) {
@@ -32,25 +35,6 @@ export async function getOrders(filters: OrderFilters = {}) {
       skip,
       take: limit,
       orderBy: { createdAt: 'desc' },
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-        items: {
-          include: {
-            product: {
-              include: {
-                category: true,
-              },
-            },
-          },
-        },
-      },
     }),
     prisma.order.count({ where }),
   ])
@@ -64,7 +48,7 @@ export async function getOrders(filters: OrderFilters = {}) {
   }
 }
 
-export async function getOrderById(id: number) {
+export async function getOrderById(id: number, requestingUserId: number, isAdmin: boolean) {
   const order = await prisma.order.findUnique({
     where: { id },
     include: {
@@ -94,10 +78,15 @@ export async function getOrderById(id: number) {
     throw new Error('Pedido não encontrado')
   }
 
+  if (!isAdmin && order.userId !== requestingUserId) {
+    throw new Error('Você não tem permissão para acessar este pedido')
+  }
+
   return order
 }
 
 export async function createOrder(data: CreateOrder) {
+  
   const productIds = data.items.map(item => item.productId)
   const products = await prisma.product.findMany({
     where: { id: { in: productIds } },
@@ -141,6 +130,7 @@ export async function createOrder(data: CreateOrder) {
   }
 
   const order = await prisma.$transaction(async (tx) => {
+  
     const newOrder = await tx.order.create({
       data: {
         userId: data.userId,
@@ -181,13 +171,18 @@ export async function createOrder(data: CreateOrder) {
   return order
 }
 
-export async function updateOrder(id: number, data: UpdateOrder) {
+export async function updateOrder(id: number, data: UpdateOrder, requestingUserId: number, isAdmin: boolean) {
+
   const existingOrder = await prisma.order.findUnique({
     where: { id },
   })
 
   if (!existingOrder) {
     throw new Error('Pedido não encontrado')
+  }
+
+  if (!isAdmin && existingOrder.userId !== requestingUserId) {
+    throw new Error('Você não tem permissão para atualizar este pedido')
   }
 
   const updatedOrder = await prisma.order.update({
@@ -222,13 +217,18 @@ export async function updateOrder(id: number, data: UpdateOrder) {
   return updatedOrder
 }
 
-export async function cancelOrder(id: number) {
+export async function cancelOrder(id: number, requestingUserId: number, isAdmin: boolean) {
+
   const existingOrder = await prisma.order.findUnique({
     where: { id },
   })
 
   if (!existingOrder) {
     throw new Error('Pedido não encontrado')
+  }
+
+  if (!isAdmin && existingOrder.userId !== requestingUserId) {
+    throw new Error('Você não tem permissão para cancelar este pedido')
   }
 
   if (existingOrder.status === 'CANCELLED') {
