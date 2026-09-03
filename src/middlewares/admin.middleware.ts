@@ -3,6 +3,7 @@ import { prisma } from "../utils/prisma";
 
 export const requireAdmin = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
 	try {
+
 		await request.jwtVerify();
 
 		const userId = (request.user as any).userId;

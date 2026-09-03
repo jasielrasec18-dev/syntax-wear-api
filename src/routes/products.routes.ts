@@ -158,8 +158,7 @@ export default async function productRoutes(fastify: FastifyInstance) {
 	fastify.post<{ Body: CreateProduct }>(
 		"/",
 		{
-			onRequest: [requireAdmin], 
-			schema: {
+			onRequest: [requireAdmin],
 				tags: ["Products"],
 				description: "Criar um novo produto",
 				body: {
@@ -221,7 +220,7 @@ export default async function productRoutes(fastify: FastifyInstance) {
 	fastify.put<{ Body: UpdateProduct; Params: { id: string } }>(
 		"/:id",
 		{
-			onRequest: [requireAdmin], 
+			onRequest: [requireAdmin],
 			schema: {
 				tags: ["Products"],
 				description: "Atualizar produto",
@@ -268,6 +267,7 @@ export default async function productRoutes(fastify: FastifyInstance) {
 							color: { type: "string", nullable: true },
 							stock: { type: "integer" },
 							tags: { type: "array", items: { type: "string" } },
+							slug: { type: "string" },
 						},
 					},
 					400: {
@@ -301,7 +301,7 @@ export default async function productRoutes(fastify: FastifyInstance) {
 	fastify.delete<{ Params: { id: string } }>(
 		"/:id",
 		{
-			onRequest: [requireAdmin], 
+			onRequest: [requireAdmin],
 			schema: {
 				tags: ["Products"],
 				description: "Deletar um produto",
