@@ -3,7 +3,7 @@ import { listOrders, getOrder, createNewOrder, updateExistingOrder, deleteExisti
 import { authenticate } from '../middlewares/auth.middleware'
 
 export default async function orderRoutes(fastify: FastifyInstance) {
-  
+
   fastify.addHook('onRequest', authenticate)
 
   fastify.get(

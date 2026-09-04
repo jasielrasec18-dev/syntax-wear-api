@@ -686,7 +686,7 @@ describe("Products CRUD", () => {
 			expect(response.statusCode).toBeGreaterThanOrEqual(400);
 		});
 
-		it("produto deletado não deve aparecer na listagem padrão", async () => {
+		it("deve verificar que soft delete define active=false", async () => {
 			const mockProduct = {
 				id: 31,
 				name: "Test Product List Check",
@@ -710,7 +710,7 @@ describe("Products CRUD", () => {
 			vi.mocked(prisma.product.update).mockResolvedValueOnce(mockDeletedProduct as any);
 
 			// Deleta o produto
-			await app.inject({
+			const response = await app.inject({
 				method: "DELETE",
 				url: `/products/${mockProduct.id}`,
 				headers: {
@@ -718,29 +718,14 @@ describe("Products CRUD", () => {
 				},
 			});
 
-			// Mock para listagem (só retorna ativos)
-			const mockActiveProducts = [
-				{ id: 1, name: "Prod Ativo 1", slug: "prod-ativo-1", description: "Desc", price: 50, stock: 5, active: true, categoryId: testCategoryId, colors: null, sizes: null, images: null, createdAt: new Date(), updatedAt: new Date() },
-			];
-
-			vi.mocked(prisma.product.findMany).mockResolvedValueOnce(mockActiveProducts as any);
-			vi.mocked(prisma.product.count).mockResolvedValueOnce(1);
-
-			// Verifica se não aparece na listagem
-			const response = await app.inject({
-				method: "GET",
-				url: "/products",
-			});
-
-			expect(response.statusCode).toBe(200);
-
-			const body = JSON.parse(response.body);
-			const deletedProduct = body.data.find(
-				(p: any) => p.id === mockProduct.id
+			expect(response.statusCode).toBe(204);
+			// Verifica que update foi chamado com active: false
+			expect(prisma.product.update).toHaveBeenCalledWith(
+				expect.objectContaining({
+					where: { id: mockProduct.id },
+					data: expect.objectContaining({ active: false }),
+				})
 			);
-
-			// Produto deletado (active=false) não deve aparecer
-			expect(deletedProduct).toBeFalsy();
 		});
 	});
 });

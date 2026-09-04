@@ -739,7 +739,7 @@ describe("Categories CRUD", () => {
 			expect(response.statusCode).toBeGreaterThanOrEqual(400);
 		});
 
-		it("categoria deletada não deve aparecer na listagem padrão", async () => {
+		it("deve verificar que soft delete define active=false", async () => {
 			const mockCategory = {
 				id: 32,
 				name: "Test Category List Check",
@@ -758,7 +758,7 @@ describe("Categories CRUD", () => {
 			vi.mocked(prisma.product.updateMany).mockResolvedValueOnce({ count: 0 } as any);
 
 			// Deleta a categoria
-			await app.inject({
+			const response = await app.inject({
 				method: "DELETE",
 				url: `/categories/${mockCategory.id}`,
 				headers: {
@@ -766,30 +766,19 @@ describe("Categories CRUD", () => {
 				},
 			});
 
-			// Mock para listagem (só retorna ativas)
-			const mockActiveCategories = [
-				{ id: 1, name: "Cat Ativa 1", slug: "cat-ativa-1", description: null, active: true, createdAt: new Date(), updatedAt: new Date() },
-				{ id: 2, name: "Cat Ativa 2", slug: "cat-ativa-2", description: null, active: true, createdAt: new Date(), updatedAt: new Date() },
-			];
-
-			vi.mocked(prisma.category.findMany).mockResolvedValueOnce(mockActiveCategories as any);
-			vi.mocked(prisma.category.count).mockResolvedValueOnce(2);
-
-			// Verifica se não aparece na listagem
-			const response = await app.inject({
-				method: "GET",
-				url: "/categories",
-			});
-
-			expect(response.statusCode).toBe(200);
-
-			const body = JSON.parse(response.body);
-			const deletedCategory = body.data.find(
-				(cat: any) => cat.id === mockCategory.id
+			expect(response.statusCode).toBe(204);
+			// Verifica que update foi chamado com active: false
+			expect(prisma.category.update).toHaveBeenCalledWith(
+				expect.objectContaining({
+					where: { id: mockCategory.id },
+					data: expect.objectContaining({ active: false }),
+				})
 			);
-
-			// Categoria deletada (active=false) não deve aparecer
-			expect(deletedCategory).toBeFalsy();
+			// Verifica que updateMany foi chamado para desativar produtos
+			expect(prisma.product.updateMany).toHaveBeenCalledWith({
+				where: { categoryId: mockCategory.id },
+				data: { active: false },
+			});
 		});
 	});
 });

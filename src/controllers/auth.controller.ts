@@ -4,6 +4,7 @@ import { AuthRequest, RegisterRequest } from "../types";
 import { loginSchema, registerSchema } from "../utils/validators";
 
 export const register = async (request: FastifyRequest, reply: FastifyReply) => {
+	// Lógica de registro de usuário
 
     const validation = registerSchema.parse(request.body as RegisterRequest);
 

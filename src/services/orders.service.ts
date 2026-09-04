@@ -8,7 +8,6 @@ export async function getOrders(filters: OrderFilters = {}, requestingUserId: nu
 
   const where: any = {}
 
-  
   if (!isAdmin) {
     where.userId = requestingUserId
   } else if (filters.userId) {
@@ -86,7 +85,7 @@ export async function getOrderById(id: number, requestingUserId: number, isAdmin
 }
 
 export async function createOrder(data: CreateOrder) {
-  
+
   const productIds = data.items.map(item => item.productId)
   const products = await prisma.product.findMany({
     where: { id: { in: productIds } },
@@ -130,7 +129,7 @@ export async function createOrder(data: CreateOrder) {
   }
 
   const order = await prisma.$transaction(async (tx) => {
-  
+    // 5.1 Criar Order
     const newOrder = await tx.order.create({
       data: {
         userId: data.userId,
@@ -218,7 +217,7 @@ export async function updateOrder(id: number, data: UpdateOrder, requestingUserI
 }
 
 export async function cancelOrder(id: number, requestingUserId: number, isAdmin: boolean) {
-
+  
   const existingOrder = await prisma.order.findUnique({
     where: { id },
   })

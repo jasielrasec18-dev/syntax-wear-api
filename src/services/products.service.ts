@@ -2,9 +2,13 @@ import { prisma } from "../utils/prisma";
 import { CreateProduct, ProductFilters, UpdateProduct } from "../types";
 
 export const getProducts = async (filter: ProductFilters) => {
-	const { minPrice, maxPrice, search, sortBy, sortOrder, page = 1, limit = 10 } = filter;
+	const { minPrice, maxPrice, search, categoryId, sortBy, sortOrder, page = 1, limit = 10 } = filter;
 
 	const where: any = {};
+
+	if (categoryId) {
+		where.categoryId = categoryId;
+	}
 
 	if (minPrice !== undefined || maxPrice !== undefined) {
 		where.price = {};
@@ -42,6 +46,7 @@ export const getProducts = async (filter: ProductFilters) => {
 	}
 
 	try {
+		
 		const [products, total] = await Promise.all([
 			prisma.product.findMany({
 				where,
@@ -68,6 +73,9 @@ export const getProducts = async (filter: ProductFilters) => {
 export const getProductById = async (id: number) => {
 	const product = await prisma.product.findUnique({
 		where: { id },
+		include:{
+			category: true,
+		}
 	});
 
 	if (!product) {
@@ -78,6 +86,15 @@ export const getProductById = async (id: number) => {
 };
 
 export const createProduct = async (data: CreateProduct) => {
+	
+	const categoryExists = await prisma.category.findUnique({
+		where: { id: data.categoryId },
+	});
+
+	if (!categoryExists) {
+		throw new Error("Categoria não encontrada");
+	}
+
 	const existingProduct = await prisma.product.findUnique({
 		where: { slug: data.slug },
 	});
@@ -89,7 +106,6 @@ export const createProduct = async (data: CreateProduct) => {
 	const newProduct = await prisma.product.create({ data });
 	return newProduct;
 };
-
 export const updateProduct = async (id: number, data: UpdateProduct) => {
 	const existingProduct = await prisma.product.findUnique({
 		where: { id },
@@ -97,6 +113,16 @@ export const updateProduct = async (id: number, data: UpdateProduct) => {
 
 	if (!existingProduct) {
 		throw new Error("Produto não encontrado");
+	}
+
+	if (data.categoryId) {
+		const categoryExists = await prisma.category.findUnique({
+			where: { id: data.categoryId },
+		});
+
+		if (!categoryExists) {
+			throw new Error("Categoria não encontrada");
+		}
 	}
 
 	if (data.slug) {

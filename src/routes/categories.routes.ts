@@ -139,7 +139,7 @@ export default async function categoryRoutes(fastify: FastifyInstance) {
 	fastify.post<{ Body: CreateCategory }>(
 		"/",
 		{
-			onRequest: [requireAdmin], 
+			onRequest: [requireAdmin],
 			schema: {
 				tags: ["Categories"],
 				description: "Criar uma nova categoria",
@@ -192,7 +192,7 @@ export default async function categoryRoutes(fastify: FastifyInstance) {
 	fastify.put<{ Params: { id: string }; Body: UpdateCategory }>(
 		"/:id",
 		{
-			onRequest: [requireAdmin], 
+			onRequest: [requireAdmin],
 			schema: {
 				tags: ["Categories"],
 				description: "Atualizar categoria",
@@ -263,7 +263,7 @@ export default async function categoryRoutes(fastify: FastifyInstance) {
 	fastify.delete<{ Params: { id: string } }>(
 		"/:id",
 		{
-			onRequest: [requireAdmin], 
+			onRequest: [requireAdmin],
 			schema: {
 				tags: ["Categories"],
 				description: "Deletar uma categoria (soft delete em cascata)",

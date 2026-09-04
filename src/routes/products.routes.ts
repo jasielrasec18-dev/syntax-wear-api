@@ -159,6 +159,7 @@ export default async function productRoutes(fastify: FastifyInstance) {
 		"/",
 		{
 			onRequest: [requireAdmin],
+			schema: {
 				tags: ["Products"],
 				description: "Criar um novo produto",
 				body: {

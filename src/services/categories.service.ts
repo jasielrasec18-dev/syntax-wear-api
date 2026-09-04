@@ -20,6 +20,7 @@ export const getCategories = async (filters: CategoryFilters) => {
 	const take = Number(limit);
 
 	try {
+	
 		const [categories, total] = await Promise.all([
 			prisma.category.findMany({
 				where,
