@@ -10,6 +10,7 @@ import scalar from "@scalar/fastify-api-reference";
 import jwt from "@fastify/jwt";
 import authRoutes from "./routes/auth.routes";
 import { errorHandler } from "./middlewares/error.middleware";
+import fastifyCookie from "@fastify/cookie";
 
 const PORT = parseInt(process.env.PORT ?? "3000");
 
@@ -22,7 +23,6 @@ export async function buildApp(): Promise<FastifyInstance> {
 					return {
 						method: request.method,
 						url: request.url,
-						
 					};
 				},
 				res(reply) {
@@ -34,8 +34,14 @@ export async function buildApp(): Promise<FastifyInstance> {
 		}
 	});
 
+  fastify.register(fastifyCookie);
+
 	fastify.register(jwt, {
-		secret: process.env.JWT_SECRET!
+		secret: process.env.JWT_SECRET!,
+    cookie: {
+      cookieName: "syntaxwear.token",
+      signed: false,
+    },
 	});
 
 	fastify.register(cors, {

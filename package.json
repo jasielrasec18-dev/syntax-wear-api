@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/jasielrasec18-dev/syntax-wear-api#readme",
   "dependencies": {
+    "@fastify/cookie": "^11.1.2",
     "@fastify/cors": "^11.1.0",
     "@fastify/csrf-protection": "^7.1.0",
     "@fastify/helmet": "^13.0.2",
