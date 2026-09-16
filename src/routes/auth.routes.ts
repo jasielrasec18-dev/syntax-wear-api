@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { register, login, profile } from "../controllers/auth.controller";
+import { register, login, profile, googleLogin, signOut } from "../controllers/auth.controller";
 import { authenticate } from "../middlewares/auth.middleware";
 
 export default async function authRoutes(fastify: FastifyInstance) {
@@ -54,4 +54,31 @@ export default async function authRoutes(fastify: FastifyInstance) {
 			security: [{ bearerAuth: [] }],
 		}, 
 	}, profile);
+
+	fastify.post(
+		"/google",
+		{
+			schema: {
+				tags: ["Auth"],
+				description: "Autentica um usuário via Google OAuth2 e retorna um token JWT",
+				body: {
+					type: "object",
+					required: ["credential"],
+					properties: {
+						credential: { type: "string", description: "Credencial do Google" },
+					},
+				},
+			},
+		},
+		googleLogin
+	);
+
+	fastify.post("/signout", {
+		preHandler: [authenticate],
+		schema: {
+			tags: ["Auth"],
+			description: "Faz logout do usuário removendo o cookie JWT",
+			security: [{ bearerAuth: [] }],
+		}, 
+	}, signOut);
 }
