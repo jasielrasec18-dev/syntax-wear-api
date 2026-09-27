@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { register, login, profile, googleLogin, signOut } from "../controllers/auth.controller";
+import { register, login, profile, googleLogin, logout } from "../controllers/auth.controller";
 import { authenticate } from "../middlewares/auth.middleware";
 
 export default async function authRoutes(fastify: FastifyInstance) {
@@ -50,7 +50,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
 		preHandler: [authenticate],
 		schema: {
 			tags: ["Auth"],
-			description: "Retorna o perfil do usuário autenticado",
+			description: " Retorna o perfil do usuário autenticado",
 			security: [{ bearerAuth: [] }],
 		}, 
 	}, profile);
@@ -73,12 +73,12 @@ export default async function authRoutes(fastify: FastifyInstance) {
 		googleLogin
 	);
 
-	fastify.post("/signout", {
-		preHandler: [authenticate],
+	fastify.post("/logout", {
+		preHandler: [authenticate], 
 		schema: {
 			tags: ["Auth"],
-			description: "Faz logout do usuário removendo o cookie JWT",
+			description: "Realiza logout do usuário autenticado",
 			security: [{ bearerAuth: [] }],
-		}, 
-	}, signOut);
+		},
+	}, logout);
 }

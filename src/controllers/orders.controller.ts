@@ -8,9 +8,8 @@ export async function listOrders(request: FastifyRequest, reply: FastifyReply) {
   
   const user = request.user as any
   const requestingUserId = user.userId
-  const isAdmin = user.role === 'ADMIN'
   
-  const orders = await getOrders(filters, requestingUserId, isAdmin)
+  const orders = await getOrders(filters, requestingUserId)
   reply.status(200).send(orders)
 }
 

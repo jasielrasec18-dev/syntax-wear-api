@@ -46,7 +46,6 @@ export const getProducts = async (filter: ProductFilters) => {
 	}
 
 	try {
-		
 		const [products, total] = await Promise.all([
 			prisma.product.findMany({
 				where,
@@ -86,7 +85,6 @@ export const getProductById = async (id: number) => {
 };
 
 export const createProduct = async (data: CreateProduct) => {
-	
 	const categoryExists = await prisma.category.findUnique({
 		where: { id: data.categoryId },
 	});

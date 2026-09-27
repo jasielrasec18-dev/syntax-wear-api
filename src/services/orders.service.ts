@@ -1,18 +1,16 @@
+import Decimal from 'decimal.js'
 import { OrderFilters, CreateOrder, UpdateOrder } from '../types'
 import { prisma } from '../utils/prisma'
+import { OrderStatus } from '@prisma/client'
 
-export async function getOrders(filters: OrderFilters = {}, requestingUserId: number, isAdmin: boolean) {
+export async function getOrders(filters: OrderFilters = {}, requestingUserId: number) {
   const page = filters.page || 1
   const limit = filters.limit || 10
   const skip = (page - 1) * limit
 
   const where: any = {}
 
-  if (!isAdmin) {
-    where.userId = requestingUserId
-  } else if (filters.userId) {
-    where.userId = filters.userId
-  }
+  where.userId = requestingUserId
 
   if (filters.status) {
     where.status = filters.status
@@ -34,6 +32,20 @@ export async function getOrders(filters: OrderFilters = {}, requestingUserId: nu
       skip,
       take: limit,
       orderBy: { createdAt: 'desc' },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                images: true,
+              },
+            },
+          },
+        },
+      },
     }),
     prisma.order.count({ where }),
   ])
@@ -85,7 +97,6 @@ export async function getOrderById(id: number, requestingUserId: number, isAdmin
 }
 
 export async function createOrder(data: CreateOrder) {
-
   const productIds = data.items.map(item => item.productId)
   const products = await prisma.product.findMany({
     where: { id: { in: productIds } },
@@ -98,71 +109,73 @@ export async function createOrder(data: CreateOrder) {
     throw new Error(`Produto(s) com ID ${missingIds.join(', ')} não encontrado(s)`)
   }
 
-  const productMap = new Map(products.map(p => [p.id, p]))
+  let total = new Decimal(0)
+  const orderItemsData = data.items.map((item) => {
+    const product = products.find(product => product.id === item.productId)!
 
-  let calculatedTotal = 0
-
-  for (const item of data.items) {
-    const product = productMap.get(item.productId)!
-
-    if (!product.active) {
-      throw new Error(`Produto ${product.name} está inativo`)
+    if (product?.stock < item.quantity) {
+      throw new Error(`Estoque insuficiente para o produto ${product.name}`)
     }
 
-    if (product.stock < item.quantity) {
-      throw new Error(
-        `Estoque insuficiente para ${product.name}. Disponível: ${product.stock}, solicitado: ${item.quantity}`
-      )
-    }
+    const itemTotal = new Decimal(product.price).mul(item.quantity)
+    total = total.add(itemTotal)
 
-    const productSizes = (product.sizes as any) || []
-    if (productSizes.length > 0) {
-      if (!item.size) {
-        throw new Error(`Produto ${product.name} requer seleção de tamanho`)
-      }
-      if (!productSizes.includes(item.size)) {
-        throw new Error(`Tamanho ${item.size} não disponível para ${product.name}`)
-      }
+    return {
+      productId: product.id,
+      quantity: item.quantity,
+      price: product.price,
+      size: item.size
     }
+  })
 
-    calculatedTotal += Number(product.price) * item.quantity
-  }
+  const shippingCost = new Decimal(data.shippingCost || 0)
+  total = total.add(shippingCost)
 
   const order = await prisma.$transaction(async (tx) => {
-    // 5.1 Criar Order
     const newOrder = await tx.order.create({
       data: {
         userId: data.userId,
-        total: calculatedTotal,
-        status: 'PENDING',
-        shippingAddress: data.shippingAddress as any,
+        total,
+        status: OrderStatus.PENDING,
+        shippingAddress: JSON.parse(JSON.stringify(data.shippingAddress)),
+        shippingCost,
         paymentMethod: data.paymentMethod,
+        items: {
+          create: orderItemsData.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.price,
+            size: item.size
+          }))
+        }
       },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                images: true
+              }
+            }
+          }
+        }
+      }
     })
 
-    await Promise.all(
-      data.items.map(item => {
-        const product = productMap.get(item.productId)!
-        return tx.orderItem.create({
-          data: {
-            orderId: newOrder.id,
-            productId: item.productId,
-            price: product.price,
-            quantity: item.quantity,
-            size: item.size,
-          },
-        })
+    for (const item of orderItemsData) {
+      await tx.product.update({
+        where: {
+          id: item.productId
+        },
+        data: {
+          stock: {
+            decrement: item.quantity
+          }
+        }
       })
-    )
-
-    await Promise.all(
-      data.items.map(item =>
-        tx.product.update({
-          where: { id: item.productId },
-          data: { stock: { decrement: item.quantity } },
-        })
-      )
-    )
+    }
 
     return newOrder
   })
@@ -171,7 +184,6 @@ export async function createOrder(data: CreateOrder) {
 }
 
 export async function updateOrder(id: number, data: UpdateOrder, requestingUserId: number, isAdmin: boolean) {
-
   const existingOrder = await prisma.order.findUnique({
     where: { id },
   })
@@ -217,7 +229,6 @@ export async function updateOrder(id: number, data: UpdateOrder, requestingUserI
 }
 
 export async function cancelOrder(id: number, requestingUserId: number, isAdmin: boolean) {
-  
   const existingOrder = await prisma.order.findUnique({
     where: { id },
   })

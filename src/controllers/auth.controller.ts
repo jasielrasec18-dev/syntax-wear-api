@@ -77,13 +77,13 @@ export const googleLogin = async (
   reply.status(200).send({ user });
 };
 
-export const signOut = async (request: FastifyRequest, reply: FastifyReply) => {
-  reply.clearCookie("syntaxwear.token", {
+export const logout = async (request: FastifyRequest, reply: FastifyReply) => {
+  reply.clearCookie("syntaxwear.token", { 
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-  });
+   });
 
-  reply.status(200).send({ message: "Usuário deslogado com sucesso" });
-};
+   reply.status(200).send({ message: "Logout realizado com sucesso." });
+}

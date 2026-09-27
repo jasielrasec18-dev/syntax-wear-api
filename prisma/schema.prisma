@@ -7,18 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Models based on PRD (users and products)
+
 model User {
-  id         Int       @id @default(autoincrement())
-  firstName  String
-  lastName   String
-  email      String    @unique
-  password   String
-  cpf        String?   @unique
-  phone      String?
-  birthDate  DateTime?
-  createdAt  DateTime  @default(now())
-  role       Role      @default(USER)
-  orders     Order[]
+  id        Int       @id @default(autoincrement())
+  firstName String
+  lastName  String
+  email     String    @unique
+  password  String
+  cpf       String?   @unique
+  phone     String?
+  birthDate DateTime?
+  createdAt DateTime  @default(now())
+  role      Role      @default(USER)
+  orders    Order[]
 }
 
 enum Role {
@@ -32,7 +34,7 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
-} 
+}
 
 model Category {
   id          Int       @id @default(autoincrement())
@@ -70,6 +72,7 @@ model Order {
   total           Decimal
   status          OrderStatus @default(PENDING)
   shippingAddress Json
+  shippingCost    Decimal     @map("shipping_cost")
   paymentMethod   String
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -87,4 +90,3 @@ model OrderItem {
   size      String?
   createdAt DateTime @default(now())
 }
-

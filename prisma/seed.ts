@@ -261,6 +261,7 @@ async function main() {
           state: 'SP',
           country: 'BR',
         },
+        shippingCost: 15,
         paymentMethod: 'credit_card',
         items: {
           create: [
@@ -285,97 +286,100 @@ async function main() {
       data: {
         userId: user2.id,
         total: 229.89, // 1x Vintage Hoodie (59.90) + 1x Running Shoes (119.99) + 1x Summer Dress (49.00) + frete estimado 1.00
-        status: 'SHIPPED',
+        status: "SHIPPED",
         shippingAddress: {
-          cep: '20040020',
-          street: 'Av. Rio Branco',
-          number: '156',
-          neighborhood: 'Centro',
-          city: 'Rio de Janeiro',
-          state: 'RJ',
-          country: 'BR',
+          cep: "20040020",
+          street: "Av. Rio Branco",
+          number: "156",
+          neighborhood: "Centro",
+          city: "Rio de Janeiro",
+          state: "RJ",
+          country: "BR",
         },
-        paymentMethod: 'pix',
+        paymentMethod: "pix",
+        shippingCost: 15,
         items: {
           create: [
             {
               productId: vintageHoodie!.id,
-              price: 59.90,
+              price: 59.9,
               quantity: 1,
-              size: 'L',
+              size: "L",
             },
             {
               productId: runningShoes!.id,
               price: 119.99,
               quantity: 1,
-              size: '42',
+              size: "42",
             },
             {
               productId: summerDress!.id,
-              price: 49.00,
+              price: 49.0,
               quantity: 1,
-              size: 'M',
+              size: "M",
             },
           ],
         },
       },
-    })
+    });
 
     const order3 = await prisma.order.create({
       data: {
         userId: user1.id,
-        total: 79.50, // 1x Slim Jeans (79.50)
-        status: 'PENDING',
+        total: 79.5, // 1x Slim Jeans (79.50)
+        status: "PENDING",
         shippingAddress: {
-          cep: '01310100',
-          street: 'Av. Paulista',
-          number: '1578',
-          complement: 'Apto 101',
-          neighborhood: 'Bela Vista',
-          city: 'São Paulo',
-          state: 'SP',
-          country: 'BR',
+          cep: "01310100",
+          street: "Av. Paulista",
+          number: "1578",
+          complement: "Apto 101",
+          neighborhood: "Bela Vista",
+          city: "São Paulo",
+          state: "SP",
+          country: "BR",
         },
-        paymentMethod: 'boleto',
+        paymentMethod: "boleto",
+        shippingCost: 15,
         items: {
           create: [
             {
               productId: slimJeans!.id,
-              price: 79.50,
+              price: 79.5,
               quantity: 1,
-              size: '32',
+              size: "32",
             },
           ],
         },
       },
-    })
+    });
 
     const order4 = await prisma.order.create({
       data: {
         total: 179.97, // 3x Classic Tee (29.99 cada) + frete estimado 90.00
-        status: 'DELIVERED',
+        status: "DELIVERED",
         shippingAddress: {
-          cep: '30130100',
-          street: 'Av. Afonso Pena',
-          number: '867',
-          neighborhood: 'Centro',
-          city: 'Belo Horizonte',
-          state: 'MG',
-          country: 'BR',
+          cep: "30130100",
+          street: "Av. Afonso Pena",
+          number: "867",
+          neighborhood: "Centro",
+          city: "Belo Horizonte",
+          state: "MG",
+          country: "BR",
         },
-        paymentMethod: 'credit_card',
+        paymentMethod: "credit_card",
+        shippingCost: 15,
         items: {
           create: [
             {
               productId: classicTee!.id,
               price: 29.99,
               quantity: 3,
-              size: 'L',
+              size: "L",
             },
           ],
         },
       },
-    })
+    });
 
     console.log(`✅ 4 pedidos criados (Order IDs: ${order1.id}, ${order2.id}, ${order3.id}, ${order4.id})`)
     
